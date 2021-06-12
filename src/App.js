@@ -6,15 +6,31 @@ import {
   StatusBar,
   TouchableOpacity,
   Modal,
+  Image,
 } from 'react-native';
 import {RNCamera} from 'react-native-camera';
 
 export default function App() {
   const [typeCamera, setTypeCamera] = useState(RNCamera.Constants.Type.front);
   const [openModal, setOpenModal] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
 
-  function takePicture() {
+  async function takePicture(camera) {
+    const options = {quality: 0.5, base64: true};
+    const data = await camera.takePictureAsync(options);
+
+    setCapturedPhoto(data.uri);
+
     setOpenModal(true);
+    console.log(data.uri);
+  }
+
+  function toggleType() {
+    const types = {
+      front: RNCamera.Constants.Type.front,
+      back: RNCamera.Constants.Type.back,
+    };
+    setTypeCamera(typeCamera === types.back ? types.front : types.back);
   }
 
   return (
@@ -38,7 +54,7 @@ export default function App() {
             <View style={styles.footerCamera}>
               <TouchableOpacity
                 style={styles.capture}
-                onPress={() => takePicture()}>
+                onPress={() => takePicture(camera)}>
                 <Text>Tirar foto</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.capture}>
@@ -49,13 +65,27 @@ export default function App() {
         }}
       </RNCamera>
 
-      <Modal animationType="slide" transparent={false} visible={openModal}>
-        <View style={styles.modal}>
-          <TouchableOpacity onPress={() => setOpenModal(false)}>
-            <Text>Fechar</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      <View style={styles.switchType}>
+        <TouchableOpacity onPress={toggleType}>
+          <Text>Trocar</Text>
+        </TouchableOpacity>
+      </View>
+
+      {capturedPhoto && (
+        <Modal animationType="slide" transparent={false} visible={openModal}>
+          <View style={styles.modal}>
+            <TouchableOpacity onPress={() => setOpenModal(false)}>
+              <Text>Fechar</Text>
+            </TouchableOpacity>
+
+            <Image
+              resizeMode="contain"
+              style={styles.photo}
+              source={{uri: capturedPhoto}}
+            />
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -92,5 +122,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     margin: 20,
+  },
+  photo: {
+    width: 350,
+    height: 450,
+    borderRadius: 15,
+  },
+  switchType: {
+    backgroundColor: '#FFF',
+    borderRadius: 5,
+    padding: 10,
+    height: 40,
+    position: 'absolute',
+    right: 20,
+    top: 40,
   },
 });
