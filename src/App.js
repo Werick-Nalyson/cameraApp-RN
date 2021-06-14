@@ -7,7 +7,10 @@ import {
   TouchableOpacity,
   Modal,
   Image,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
+import CameraRoll from '@react-native-community/cameraroll';
 import {RNCamera} from 'react-native-camera';
 
 export default function App() {
@@ -20,9 +23,35 @@ export default function App() {
     const data = await camera.takePictureAsync(options);
 
     setCapturedPhoto(data.uri);
-
     setOpenModal(true);
-    console.log(data.uri);
+
+    savePicture(data.uri);
+  }
+
+  async function hasAndroidPermission() {
+    const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+
+    const hasPermission = await PermissionsAndroid.check(permission);
+    if (hasPermission) {
+      return true;
+    }
+
+    const status = await PermissionsAndroid.request(permission);
+    return status === 'granted';
+  }
+
+  async function savePicture(data) {
+    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
+      return;
+    }
+
+    CameraRoll.save(data, 'photo')
+      .then(res => {
+        console.log('SALVO COM SUCESSO ', res);
+      })
+      .catch(err => {
+        console.log('ERRO AO SALVAR ', err);
+      });
   }
 
   function toggleType() {

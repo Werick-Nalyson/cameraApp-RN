@@ -10,6 +10,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@react-native-community/cameraroll": "^4.0.4",
+    "fbjs": "^3.0.0",
     "react": "17.0.1",
     "react-native": "0.64.2",
     "react-native-camera": "^3.44.1"
